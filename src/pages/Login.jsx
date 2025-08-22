@@ -21,7 +21,7 @@ const Login = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
-    // Clear error 
+    // Clear error
     if (error) setError("");
   };
 
@@ -67,7 +67,7 @@ const Login = () => {
         }
 
         console.log("Login successful:", data);
-        navigate("/profile"); 
+        navigate("/profile");
       } else {
         setError(
           data.message || "Login failed. Please check your credentials."
@@ -81,7 +81,7 @@ const Login = () => {
     }
   };
 
-  // Check for remembered email 
+  // Check for remembered email
   useEffect(() => {
     const rememberedEmail = localStorage.getItem("rememberedEmail");
     if (rememberedEmail) {
@@ -236,12 +236,14 @@ const Login = () => {
       <div className="hidden lg:flex lg:w-3/5">
         <div className="flex relative items-center justify-center bg-gray-100 w-full">
           <img src={signup} alt="Signup" />
-          <div className="absolute top-5 left-10 flex gap-2 items-center">
-            <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-              <p className="text-white text-sm font-bold">BH</p>
+          <Link to="/">
+            <div className="absolute top-5 left-10 flex gap-2 items-center">
+              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                <p className="text-white text-sm font-bold">BH</p>
+              </div>
+              <p className="font-medium text-white">BetaHouse</p>
             </div>
-            <p className="font-medium text-white">BetaHouse</p>
-          </div>
+          </Link>
         </div>
       </div>
     </div>

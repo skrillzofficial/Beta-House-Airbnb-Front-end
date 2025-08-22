@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Menu, X, ChevronDown, User } from "lucide-react";
 import { Link } from "react-router-dom";
+import UserImg from "../assets/user-img.png"
 
 const LoggedInNav = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -136,11 +137,11 @@ const LoggedInNav = () => {
               />
             ) : (
               <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                <User size={16} className="text-white" />
+                <img src={UserImg} alt="Dummy Image" />
               </div>
             )}
             <span className="text-sm text-white">
-              {user?.user?.firstName || user?.user?.lastName || "User"}
+              {user?.user?.firstName || user?.user?.lastName || "Michael Idioha"}
             </span>
             <ChevronDown size={16} className="text-white" />
           </div>
