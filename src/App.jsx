@@ -1,10 +1,11 @@
 import { useState } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Homepage from "./pages/HomePage";
+
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Profilepage from "./pages/profilepage";
+import ProfilePage from "./pages/profilepage";
+import HomePage from "./components/HomePage";
 
 
 function App() {
@@ -12,10 +13,10 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Homepage/>} />
+          <Route path="/" element={<HomePage/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/profile" element={<Profilepage/>} />
+          <Route path="/profile" element={<ProfilePage/>} />
         </Routes>
       </BrowserRouter>
     </>

@@ -4,7 +4,7 @@ import PropertyListing from '../components/PropertyListing'
 import PropertyCarousel from '../components/PropertyCarousel'
 import NavHeroLoggedin from '../components/NavHeroLoggedin'
 
-const Profilepage = () => {
+const ProfilePage = () => {
   return (
     <div>
         <NavHeroLoggedin/>
@@ -15,4 +15,4 @@ const Profilepage = () => {
   )
 }
 
-export default Profilepage
+export default ProfilePage
