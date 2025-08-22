@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { Menu, X, ChevronDown, User } from "lucide-react";
-import { Link } from "react-router-dom";
-import UserImg from "../assets/user-img.png"
+import React, { useState, useEffect, useRef } from "react";
+import { Menu, X, ChevronDown, User, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import UserImg from "../assets/user-img.png";
 
 const LoggedInNav = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   const BACKEND_URL =
     "https://beta-house-airbnb-backend.onrender.com/api/v1/profile";
@@ -33,7 +36,7 @@ const LoggedInNav = () => {
 
         if (response.ok) {
           const userData = await response.json();
-          console.log(userData)
+          console.log(userData);
           setUser(userData);
         } else {
           console.error("Failed to fetch user data:", response.status);
@@ -48,20 +51,46 @@ const LoggedInNav = () => {
     fetchUserData();
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleSignOut = () => {
+    // Clear authentication tokens
+    localStorage.removeItem("authToken");
+    sessionStorage.removeItem("authToken");
+    
+    // Close dropdown
+    setIsDropdownOpen(false);
+    
+    // Redirect to homepage
+    navigate("/");
+  };
+
   if (loading) {
     return (
       <div className="w-full">
         <div className="container mx-auto w-11/12">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
+            <Link to="/profile" className="flex items-center space-x-2">
               <div className="bg-green-400 w-10 h-10 rounded-full flex items-center justify-center">
                 <p className="text-white font-bold">BH</p>
               </div>
               <p className="text-xl font-bold text-white">BetaHouse</p>
             </Link>
 
-            {/* Loading space for lloggedin user info */}
+            {/* Loading space for loggedin user info */}
             <div className="hidden md:flex items-center space-x-2">
               <div className="w-8 h-8 rounded-full bg-gray-600 animate-pulse"></div>
               <div className="h-4 w-20 bg-gray-600 rounded animate-pulse"></div>
@@ -86,7 +115,7 @@ const LoggedInNav = () => {
         {/* BetaHouse Navbar */}
         <div className="flex justify-between items-center h-16">
           {/* Logo and brand name */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/profile" className="flex items-center space-x-2">
             <div className="bg-green-400 w-10 h-10 rounded-full flex items-center justify-center">
               <p className="text-white font-bold">BH</p>
             </div>
@@ -96,7 +125,7 @@ const LoggedInNav = () => {
           {/* Navlinks */}
           <div className="hidden lg:flex space-x-8 absolute left-1/2 transform -translate-x-1/2">
             <Link
-              to="/"
+              to="/profile"
               className="text-white hover:underline pb-2 font-medium transition-all underline-offset-4"
             >
               Home
@@ -127,23 +156,44 @@ const LoggedInNav = () => {
             </Link>
           </div>
 
-          {/* User section */}
-          <div className="hidden md:flex items-center space-x-2">
-            {user?.avatar || user?.profilePicture ? (
-              <img
-                src={user.avatar || user.profilePicture}
-                alt={"User"}
-                className="w-8 h-8 rounded-full object-cover"
+          {/* User section with dropdown */}
+          <div className="hidden md:flex items-center space-x-2 relative" ref={dropdownRef}>
+            <button 
+              className="flex items-center space-x-2 focus:outline-none"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              {user?.avatar || user?.profilePicture ? (
+                <img
+                  src={user.avatar || user.profilePicture}
+                  alt={"Dummy Image"}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full cursor-pointer flex items-center justify-center">
+                  <img src={UserImg} alt="Dummy Image" className="w-6 h-6" />
+                </div>
+              )}
+              <span className="text-sm cursor-pointer text-white">
+                {user?.user?.firstName || user?.user?.lastName || "Michael Idioha"}
+              </span>
+              <ChevronDown 
+                size={16} 
+                className={`text-white cursor-pointer transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
               />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                <img src={UserImg} alt="Dummy Image" />
+            </button>
+
+            {/* Dropdown menu */}
+            {isDropdownOpen && (
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center px-4 py-2 cursor-pointer text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                >
+                  <LogOut size={16} className="mr-2" />
+                  Sign Out
+                </button>
               </div>
             )}
-            <span className="text-sm text-white">
-              {user?.user?.firstName || user?.user?.lastName || "Michael Idioha"}
-            </span>
-            <ChevronDown size={16} className="text-white" />
           </div>
 
           {/* Mobile menu */}
@@ -162,7 +212,7 @@ const LoggedInNav = () => {
           <div className="md:hidden bg-white/90 backdrop-blur-sm border-t border-gray-200 py-4 rounded-b-lg">
             <div className="flex flex-col space-y-4 px-4">
               <Link
-                to="/"
+                to="/profile"
                 className="text-gray-600 hover:underline font-medium py-2 underline-offset-4"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -197,22 +247,31 @@ const LoggedInNav = () => {
                 Contact Us
               </Link>
 
-              {/* Mobile user info */}
-              <div className="pt-4 border-t border-gray-200 flex items-center space-x-2">
-                {user?.avatar || user?.profilePicture ? (
-                  <img
-                    src={user.avatar || user.profilePicture}
-                    alt={user.name || user.username || "User"}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                    <User size={16} className="text-white" />
-                  </div>
-                )}
-                <span className="text-gray-600 text-sm">
-                  {user?.user?.firstName || user?.user?.lastName || "User"}
-                </span>
+              {/* Mobile user info and sign out */}
+              <div className="pt-4 border-t border-gray-200">
+                <div className="flex items-center space-x-2 mb-3">
+                  {user?.avatar || user?.profilePicture ? (
+                    <img
+                      src={user.avatar || user.profilePicture}
+                      alt={user.name || user.username || "Dummy Image"}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full  flex items-center justify-center">
+                     <img src={UserImg} alt="Dummy Image" className="w-6 h-6" />
+                    </div>
+                  )}
+                  <span className="text-gray-600 text-sm">
+                    {user?.user?.firstName || user?.user?.lastName || "Michael Idioha"}
+                  </span>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center text-gray-600 hover:underline font-medium py-2"
+                >
+                  <LogOut size={16} className="mr-2" />
+                  Sign Out
+                </button>
               </div>
             </div>
           </div>
