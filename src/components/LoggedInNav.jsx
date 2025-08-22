@@ -123,7 +123,7 @@ const LoggedInNav = () => {
           </Link>
 
           {/* Navlinks */}
-          <div className="hidden lg:flex space-x-8 absolute left-1/2 transform -translate-x-1/2">
+          <div className="hidden  lg:flex space-x-8 absolute left-1/2 transform -translate-x-1/2">
             <Link
               to="/profile"
               className="text-white hover:underline pb-2 font-medium transition-all underline-offset-4"
@@ -131,25 +131,25 @@ const LoggedInNav = () => {
               Home
             </Link>
             <Link
-              to="/properties"
-              className="text-white hover:underline font-medium transition-all underline-offset-4"
+              to=""
+              className="text-white hover:underline  font-medium transition-all underline-offset-4"
             >
               Properties
             </Link>
             <Link
-              to="/about"
+              to=""
               className="text-white hover:underline font-medium transition-all underline-offset-4"
             >
               About Us
             </Link>
             <Link
-              to="/blog"
+              to=""
               className="text-white hover:underline font-medium transition-all underline-offset-4"
             >
               Blog
             </Link>
             <Link
-              to="/contact"
+              to=""
               className="text-white hover:underline font-medium transition-all underline-offset-4"
             >
               Contact Us
@@ -219,28 +219,28 @@ const LoggedInNav = () => {
                 Home
               </Link>
               <Link
-                to="/properties"
+                to=""
                 className="text-gray-600 hover:underline font-medium py-2 underline-offset-4"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Properties
               </Link>
               <Link
-                to="/about"
+                to=""
                 className="text-gray-600 hover:underline font-medium py-2 underline-offset-4"
                 onClick={() => setIsMenuOpen(false)}
               >
                 About Us
               </Link>
               <Link
-                to="/blog"
+                to=""
                 className="text-gray-600 hover:underline font-medium py-2 underline-offset-4"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Blog
               </Link>
               <Link
-                to="/contact"
+                to=""
                 className="text-gray-600 hover:underline font-medium py-2 underline-offset-4"
                 onClick={() => setIsMenuOpen(false)}
               >
