@@ -3,15 +3,12 @@ import { MapPin } from "lucide-react";
 
 const Hero = () => {
   return (
-    <div>
+    <div className='w-11/12 container mx-auto'>
       {/* Hero Section */}
       <div className="flex flex-col items-center justify-center text-center py-20 px-4 min-h-screen">
-        {/* Main Heading */}
         <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
           Browse Our Properties
         </h1>
-        
-        {/* Subtitle */}
         <p className="text-lg md:text-xl text-white mb-12 max-w-2xl leading-relaxed">
           Find your perfect home among our curated properties. Start browsing now!
         </p>

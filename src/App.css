@@ -1,6 +1,6 @@
 @import "tailwindcss";
 *{
-  
+  font-family: Poppins;
 }
 .Herobackground{
   background-image: url(./assets/hero-bg.png);

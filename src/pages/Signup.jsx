@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import signup from "../assets/sign-up.png"
-import google from "../assets/🦆 icon _google_.png"
+import { Eye, EyeOff, X } from "lucide-react";
+import signup from "../assets/sign-up.png";
+import google from "../assets/🦆 icon _google_.png";
+import { Link, useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,10 @@ const SignUp = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -21,26 +26,185 @@ const SignUp = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    const newErrors = {};
+
+    // First name validation
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = "First name is required";
+    }
+
+    // Last name validation
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = "Last name is required";
+    }
+
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    // Confirm password validation
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    // Terms agreement validation
+    if (!formData.agreeToTerms) {
+      newErrors.agreeToTerms = "You must agree to the terms and conditions";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Send registration data to your backend API
+      const response = await fetch(
+        "https://beta-house-airbnb-backend.onrender.com/api/v1/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Registration successful
+        setShowSuccessModal(true);
+      } else {
+        setErrors({
+          submit: data.message || "Registration failed. Please try again.",
+        });
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      setErrors({ submit: "Network error. Please try again." });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = () => {
+    console.log("Google sign-up clicked");
+  };
+
+  const handleCloseModal = () => {
+    setShowSuccessModal(false);
+  };
+
+  const handleSignIn = () => {
+    setShowSuccessModal(false);
+    navigate("/login");
+  };
+
+  // Success Modal Component
+  const SuccessModal = () => {
+    if (!showSuccessModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative">
+          {/* Close Button */}
+          <button
+            onClick={handleCloseModal}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          {/* Modal Content */}
+          <div className="text-center">
+            <h3 className="mt-4 text-lg font-medium text-gray-900">
+              Account Created Successfully!
+            </h3>
+
+            <div className="mt-2">
+              <p className="text-sm text-gray-600 mt-2">
+                You can go ahead to sign in.
+              </p>
+            </div>
+
+            <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={handleCloseModal}
+                className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                Close
+              </button>
+
+              <button
+                onClick={handleSignIn}
+                className="w-full sm:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="container w-11/12 mx-auto min-h-screen flex flex-col lg:flex-row">
+      {/* Success Modal */}
+      <SuccessModal />
+
       {/* Form Section */}
       <div className="w-full lg:w-2/5 bg-white flex flex-col justify-center py-6 px-4 sm:px-6 lg:px-16">
         <div className="mx-auto w-full max-w-md">
           <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 leading-tight">
-            Join our community of home seekers and explore the possibilities that await.
+            Join our community of home seekers and explore the possibilities
+            that await.
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             Let's get started by filling out the information below
           </p>
 
-          <div className="mt-6 space-y-4">
+          {/*Submit error */}
+          {errors.submit && (
+            <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+              {errors.submit}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-3 sm:gap-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -50,12 +214,18 @@ const SignUp = () => {
                   <input
                     name="firstName"
                     type="text"
-                    required
                     value={formData.firstName}
                     onChange={handleChange}
-                    className="py-2 px-3 text-sm block w-full border-2 border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                    className={`py-2 px-3 text-sm block w-full border-2 rounded-md focus:ring-green-500 focus:border-green-500 ${
+                      errors.firstName ? "border-red-500" : "border-gray-300"
+                    }`}
                     placeholder="Enter Name"
                   />
+                  {errors.firstName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.firstName}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -67,12 +237,18 @@ const SignUp = () => {
                   <input
                     name="lastName"
                     type="text"
-                    required
                     value={formData.lastName}
                     onChange={handleChange}
-                    className="py-2 px-3 text-sm block w-full border-2 border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                    className={`py-2 px-3 text-sm block w-full border-2 rounded-md focus:ring-green-500 focus:border-green-500 ${
+                      errors.lastName ? "border-red-500" : "border-gray-300"
+                    }`}
                     placeholder="Enter Name"
                   />
+                  {errors.lastName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.lastName}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -85,12 +261,16 @@ const SignUp = () => {
                 <input
                   name="email"
                   type="email"
-                  required
                   value={formData.email}
                   onChange={handleChange}
-                  className="py-2 px-3 text-sm block w-full border-2 border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                  className={`py-2 px-3 text-sm block w-full border-2 rounded-md focus:ring-green-500 focus:border-green-500 ${
+                    errors.email ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder="Enter your Email"
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                )}
               </div>
             </div>
 
@@ -102,10 +282,11 @@ const SignUp = () => {
                 <input
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  required
                   value={formData.password}
                   onChange={handleChange}
-                  className="py-2 px-3 pr-10 text-sm block w-full border-2 border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                  className={`py-2 px-3 pr-10 text-sm block w-full border-2 rounded-md focus:ring-green-500 focus:border-green-500 ${
+                    errors.password ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder="Enter your password"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -121,6 +302,9 @@ const SignUp = () => {
                     )}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                )}
               </div>
             </div>
 
@@ -132,10 +316,13 @@ const SignUp = () => {
                 <input
                   name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
-                  required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="py-2 px-3 pr-10 text-sm block w-full border-2 border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                  className={`py-2 px-3 pr-10 text-sm block w-full border-2 rounded-md focus:ring-green-500 focus:border-green-500 ${
+                    errors.confirmPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
                   placeholder="Confirm your password"
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -151,6 +338,11 @@ const SignUp = () => {
                     )}
                   </button>
                 </div>
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.confirmPassword}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -160,24 +352,35 @@ const SignUp = () => {
                 type="checkbox"
                 checked={formData.agreeToTerms}
                 onChange={handleChange}
-                className="h-4 w-4 mt-0.5 border-gray-300 cursor-pointer rounded text-green-600 focus:ring-green-500 accent-green-600"
+                className={`h-4 w-4 mt-0.5 cursor-pointer rounded text-green-600 focus:ring-green-500 accent-green-600 ${
+                  errors.agreeToTerms ? "border-red-500" : "border-gray-300"
+                }`}
               />
               <p className="ml-2 text-xs leading-4">
                 I agree to{" "}
-                <span className="text-green-600 hover:text-green-700 cursor-pointer">Terms of Service</span> and{" "}
-                <span className="text-green-600 hover:text-green-700 cursor-pointer">Privacy Policies</span>
+                <span className="text-green-600 hover:text-green-700 cursor-pointer">
+                  Terms of Service
+                </span>{" "}
+                and{" "}
+                <span className="text-green-600 hover:text-green-700 cursor-pointer">
+                  Privacy Policies
+                </span>
               </p>
             </div>
+            {errors.agreeToTerms && (
+              <p className="text-sm text-red-600">{errors.agreeToTerms}</p>
+            )}
 
             <div className="pt-2">
               <button
-                onClick={handleSubmit}
-                className="w-full flex justify-center cursor-pointer py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 "
+                type="submit"
+                disabled={isLoading}
+                className="w-full flex justify-center cursor-pointer py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Sign Up
+                {isLoading ? "Creating Account..." : "Sign Up"}
               </button>
             </div>
-          </div>
+          </form>
 
           <div className="mt-6">
             <div className="relative">
@@ -192,10 +395,13 @@ const SignUp = () => {
             <div className="mt-4">
               <button
                 type="button"
-                className="w-full inline-flex justify-center py-2.5 px-4 border rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 "
+                onClick={handleGoogleSignUp}
+                className="w-full inline-flex justify-center py-2.5 px-4 border rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
               >
                 <div className="flex gap-2 cursor-pointer items-center">
-                  <div className="w-4 h-4 rounded-sm flex items-center justify-center text-xs"><img src={google} alt="" /></div>
+                  <div className="w-4 h-4 rounded-sm flex items-center justify-center text-xs">
+                    <img src={google} alt="Google" />
+                  </div>
                   <p>Continue with Google</p>
                 </div>
               </button>
@@ -206,9 +412,11 @@ const SignUp = () => {
                 <p className="text-sm text-gray-600">
                   Already have an account?
                 </p>
-                <button className="text-green-600 hover:text-green-700 text-sm font-medium cursor-pointer">
-                  Sign in
-                </button>
+                <Link to="/Login">
+                  <button className="text-green-600 hover:text-green-700 text-sm font-medium cursor-pointer">
+                    Sign in
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -217,8 +425,14 @@ const SignUp = () => {
 
       {/* Image Section */}
       <div className="hidden lg:flex lg:w-3/5">
-        <div className="flex items-center justify-center bg-gray-100 w-full">
-          <img src={signup} alt="" />
+        <div className="flex relative items-center justify-center bg-gray-100 w-full">
+          <img src={signup} alt="Sign up" />
+          <div className="absolute top-5 left-10 flex gap-2 items-center">
+            <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+              <p className="text-white text-sm font-bold">BH</p>
+            </div>
+            <p className="font-medium text-white">BetaHouse</p>
+          </div>
         </div>
       </div>
     </div>

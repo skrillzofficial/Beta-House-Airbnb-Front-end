@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Menu, X, Search, MapPin } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { Link } from 'react-router-dom'
 
 const Nav = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -9,7 +10,7 @@ const Nav = () => {
       <div className="container mx-auto w-11/12">
         {/* BetaHouse Navbar */}
         <div className="flex justify-between items-center h-16">
-          {/* Logo and brand name to the left */}
+          {/* Logo and brand name  */}
           <div className="flex items-center space-x-2">
             <div className="bg-green-400 w-10 h-10 rounded-full flex items-center justify-center">
               <p className="text-white font-bold">BH</p>
@@ -17,7 +18,7 @@ const Nav = () => {
             <p className="text-xl font-bold text-white">BetaHouse</p>
           </div>
 
-          {/* Navlinks should be center placed */}
+          {/* Navlinks */}
           <div className="hidden lg:flex space-x-8 absolute left-1/2 transform -translate-x-1/2">
             <span className="text-white hover:underline pb-2 font-medium cursor-pointer transition-all underline-offset-4">
               Home
@@ -36,14 +37,14 @@ const Nav = () => {
             </span>
           </div>
 
-          {/* Sign in and login button to the right */}
+          {/* Sign in and login button  */}
           <div className="hidden md:flex items-center space-x-4">
-             <button className="px-4 py-1 text-white font-medium border-2 rounded-md cursor-pointer transition-colors">
+             <Link to="/Signup"><button className="px-4 py-1 text-white font-medium border-2 rounded-md cursor-pointer transition-colors">
               Sign Up
-            </button>
-            <button className="px-4 py-1 bg-green-400 text-white rounded-md hover:bg-green-600 transition-colors cursor-pointer font-medium">
+            </button></Link>
+            <Link to="/Login"><button className="px-4 py-1 bg-green-400 text-white rounded-md hover:bg-green-600 transition-colors cursor-pointer font-medium">
               Login
-            </button>
+            </button></Link>
           </div>
 
           {/* Mobile menu button */}
@@ -77,12 +78,12 @@ const Nav = () => {
                 Contact Us
               </span>
               <div className="flex flex-col space-y-3 pt-4 border-t border-gray-100">
-                <button className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium">
+                <Link to="/Signup"><button className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium">
                   Sign Up
-                </button>
-                <button className="px-4 py-2 text-gray-600 hover:text-green-600 font-medium text-left">
+                </button></Link>
+                <Link to="/Login"><button className="px-4 py-2 text-gray-600 hover:text-green-600 font-medium text-left">
                   Login
-                </button>
+                </button></Link>
               </div>
             </div>
           </div>
