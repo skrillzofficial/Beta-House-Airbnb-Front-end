@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
-
-// Import images directly (recommended approach)
 import Discov1 from '../assets/Discov1.png';
 import Discov2 from '../assets/Discov2.png';
 import Discov3 from '../assets/Discov3.png';
 import Discov4 from '../assets/Discov4.png';
-
 
 const PropertyCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -91,25 +88,31 @@ const PropertyCarousel = () => {
     // Set initial value
     handleResize();
     
-    // Add event listener
+    // Event listener
     window.addEventListener('resize', handleResize);
     
-    // Clean up
+    // Handle Clean up
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Calculate maximum index we can scroll to
-  const maxIndex = Math.max(0, properties.length - visibleCount);
-
   // Function to go to previous property
   const goToPrevious = () => {
-    setCurrentIndex(currentIndex === 0 ? maxIndex : currentIndex - 1);
+    setCurrentIndex(currentIndex === 0 ? properties.length - visibleCount : currentIndex - 1);
   };
 
   // Function to go to next property
   const goToNext = () => {
-    setCurrentIndex(currentIndex >= maxIndex ? 0 : currentIndex + 1);
+    setCurrentIndex(currentIndex >= properties.length - visibleCount ? 0 : currentIndex + 1);
   };
+
+  // Get currently visible properties
+  const visibleProperties = properties.slice(currentIndex, currentIndex + visibleCount);
+  
+  // If we're at the end and don't have enough properties to show then add properties from the beginning to fill the gap
+  if (visibleProperties.length < visibleCount) {
+    const needed = visibleCount - visibleProperties.length;
+    visibleProperties.push(...properties.slice(0, needed));
+  }
 
   return (
     <div className="w-11/12 container mx-auto px-4 py-12">
@@ -139,18 +142,12 @@ const PropertyCarousel = () => {
 
         {/* Carousel Content */}
         <div className="overflow-hidden">
-          <div 
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{ 
-              transform: `translateX(-${currentIndex * (100 / visibleCount)}%)`,
-              width: `${(properties.length / visibleCount) * 100}%`
-            }}
-          >
-            {properties.map((property) => (
+          <div className="flex justify-center">
+            {visibleProperties.map((property) => (
               <div 
                 key={property.id} 
                 className="p-4"
-                style={{ width: `${100 / properties.length}%` }}
+                style={{ width: `${100 / visibleCount}%` }}
               >
                 <div className="bg-white relative rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 h-100">
                   {/* Property Image */}
