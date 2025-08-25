@@ -182,12 +182,24 @@ const SignUp = () => {
   };
 
   return (
-    <div className="container w-11/12 mx-auto min-h-screen flex flex-col lg:flex-row">
+    <div className="container mx-auto min-h-screen flex flex-col lg:flex-row">
       {/* Success Modal */}
       <SuccessModal />
 
+      {/* Mobile BetaHouse Logo - Only visible on mobile */}
+      <div className="lg:hidden absolute top-5 left-5 z-10">
+        <Link to="/">
+          <div className="flex gap-2 items-center">
+            <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+              <p className="text-white text-sm font-bold">BH</p>
+            </div>
+            <p className="font-medium text-white">BetaHouse</p>
+          </div>
+        </Link>
+      </div>
+
       {/* Form Section */}
-      <div className="w-full lg:w-2/5 bg-white flex flex-col justify-center py-6 px-4 sm:px-6 lg:px-16">
+      <div className="w-full lg:w-2/5 bg-white flex flex-col justify-center py-6 px-4 sm:px-6 lg:px-16 mt-10 lg:mt-0">
         <div className="mx-auto w-full max-w-md">
           <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 leading-tight">
             Join our community of home seekers and explore the possibilities
@@ -427,6 +439,7 @@ const SignUp = () => {
       <div className="hidden lg:flex lg:w-3/5">
         <div className="flex relative items-center justify-center bg-gray-100 w-full">
           <img src={signup} alt="Sign up" />
+          {/* Desktop BetaHouse Logo - Only visible on desktop */}
           <Link to="/">
             <div className="absolute top-5 left-10 flex gap-2 items-center">
               <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">

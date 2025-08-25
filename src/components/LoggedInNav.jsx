@@ -18,12 +18,11 @@ const LoggedInNav = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token =
-          localStorage.getItem("authToken") ||
-          sessionStorage.getItem("authToken");
+        const token = localStorage.getItem("token");
 
         if (!token) {
           setLoading(false);
+          navigate("/login");
           return;
         }
 
@@ -36,7 +35,6 @@ const LoggedInNav = () => {
 
         if (response.ok) {
           const userData = await response.json();
-          console.log(userData);
           setUser(userData);
         } else {
           console.error("Failed to fetch user data:", response.status);
@@ -49,7 +47,7 @@ const LoggedInNav = () => {
     };
 
     fetchUserData();
-  }, []);
+  }, [navigate]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -66,15 +64,26 @@ const LoggedInNav = () => {
   }, []);
 
   const handleSignOut = () => {
-    // Clear authentication tokens
-    localStorage.removeItem("authToken");
-    sessionStorage.removeItem("authToken");
-    
+    // Clear authentication tokens and user data
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+
     // Close dropdown
     setIsDropdownOpen(false);
-    
+
     // Redirect to homepage
     navigate("/");
+  };
+
+  // Get user's display name
+  const getDisplayName = () => {
+    if (!user) return "Guest";
+    if (user.user && (user.user.firstName || user.user.lastName)) {
+      return `${user.user.firstName || ""} ${user.user.lastName || ""}`.trim();
+    }
+    return "User";
   };
 
   if (loading) {
@@ -92,8 +101,8 @@ const LoggedInNav = () => {
 
             {/* Loading space for loggedin user info */}
             <div className="hidden md:flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full bg-gray-600 animate-pulse"></div>
-              <div className="h-4 w-20 bg-gray-600 rounded animate-pulse"></div>
+              <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
+              <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
               <ChevronDown size={16} className="text-white" />
             </div>
 
@@ -123,7 +132,7 @@ const LoggedInNav = () => {
           </Link>
 
           {/* Navlinks */}
-          <div className="hidden  lg:flex space-x-8 absolute left-1/2 transform -translate-x-1/2">
+          <div className="hidden lg:flex space-x-8 absolute left-1/2 transform -translate-x-1/2">
             <Link
               to="/profile"
               className="text-white hover:underline pb-2 font-medium transition-all underline-offset-4"
@@ -132,59 +141,67 @@ const LoggedInNav = () => {
             </Link>
             <Link
               to=""
-              className="text-white hover:underline  font-medium transition-all underline-offset-4"
+              className="text-white disabled hover:underline font-medium transition-all underline-offset-4"
             >
               Properties
             </Link>
             <Link
               to=""
-              className="text-white hover:underline font-medium transition-all underline-offset-4"
+              className="text-white disabled hover:underline font-medium transition-all underline-offset-4"
             >
               About Us
             </Link>
             <Link
               to=""
-              className="text-white hover:underline font-medium transition-all underline-offset-4"
+              className="text-white disabled hover:underline font-medium transition-all underline-offset-4"
             >
               Blog
             </Link>
             <Link
               to=""
-              className="text-white hover:underline font-medium transition-all underline-offset-4"
+              className="text-white disabled hover:underline font-medium transition-all underline-offset-4"
             >
               Contact Us
             </Link>
           </div>
 
           {/* User section with dropdown */}
-          <div className="hidden md:flex items-center space-x-2 relative" ref={dropdownRef}>
-            <button 
+          <div
+            className="hidden md:flex items-center space-x-2 relative"
+            ref={dropdownRef}
+          >
+            <button
               className="flex items-center space-x-2 focus:outline-none"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               {user?.avatar || user?.profilePicture ? (
                 <img
                   src={user.avatar || user.profilePicture}
-                  alt={"Dummy Image"}
+                  alt={getDisplayName()}
                   className="w-8 h-8 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full cursor-pointer flex items-center justify-center">
-                  <img src={UserImg} alt="Dummy Image" className="w-6 h-6" />
+                <div className="w-8 h-8 rounded-fullcursor-pointer flex items-center justify-center">
+                  <img src={UserImg} alt="dummy image"/>
                 </div>
               )}
               <span className="text-sm cursor-pointer text-white">
-                {user?.user?.firstName || user?.user?.lastName || "Michael Idioha"}
+                {getDisplayName()}
               </span>
-              <ChevronDown 
-                size={16} 
-                className={`text-white cursor-pointer transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
+              <ChevronDown
+                size={16}
+                className={`text-white cursor-pointer transition-transform ${
+                  isDropdownOpen ? "rotate-180" : ""
+                }`}
               />
             </button>
 
             {/* Dropdown menu */}
             {isDropdownOpen && (
               <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                <div className="px-4 py-2 text-xs text-gray-500 border-b">
+                  Signed in as {getDisplayName()}
+                </div>
                 <button
                   onClick={handleSignOut}
                   className="flex items-center px-4 py-2 cursor-pointer text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
@@ -200,7 +217,7 @@ const LoggedInNav = () => {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-white hover:text-green-600"
+              className="text-white hover:text-green-300"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -253,16 +270,16 @@ const LoggedInNav = () => {
                   {user?.avatar || user?.profilePicture ? (
                     <img
                       src={user.avatar || user.profilePicture}
-                      alt={user.name || user.username || "Dummy Image"}
+                      alt={getDisplayName()}
                       className="w-8 h-8 rounded-full object-cover"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full  flex items-center justify-center">
-                     <img src={UserImg} alt="Dummy Image" className="w-6 h-6" />
+                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <User className="w-5 h-5 text-green-600" />
                     </div>
                   )}
                   <span className="text-gray-600 text-sm">
-                    {user?.user?.firstName || user?.user?.lastName || "Michael Idioha"}
+                    {getDisplayName()}
                   </span>
                 </div>
                 <button

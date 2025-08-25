@@ -8,17 +8,19 @@ import ProfilePage from "./components/ProfilePage";
 import HomePage from "./components/HomePage";
 
 
+
 function App() {
   return (
     <>
-      <BrowserRouter>
+ <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/profile" element={<ProfilePage/>} />
+          <Route path="/property" element={<ProfilePage/>} />
         </Routes>
       </BrowserRouter>
+      
     </>
   );
 }

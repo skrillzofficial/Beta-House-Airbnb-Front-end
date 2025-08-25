@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Bed,
   Bath,
@@ -6,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
+  X
 } from "lucide-react";
 import propeye from "../assets/Propeye.png";
 import propimage from "../assets/Propimage.png";
@@ -16,16 +18,26 @@ import loveicon from "../assets/loveicon.png";
 
 const PropertyListing = () => {
   const [properties, setProperties] = useState([]);
+  const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
-  const [favoriteProperties, setFavoriteProperties] = useState(new Set());
+  const [searchCriteria, setSearchCriteria] = useState(null);
+  const [searchPerformed, setSearchPerformed] = useState(false);
   const propertiesPerPage = 9;
+  const location = useLocation();
 
   // Function to fetch properties from backend
   useEffect(() => {
     fetchProperties();
   }, []);
+
+  // Check for search criteria in location state
+  useEffect(() => {
+    if (location.state && location.state.searchCriteria) {
+      handleSearch(location.state.searchCriteria);
+    }
+  }, [location]);
 
   const fetchProperties = async () => {
     try {
@@ -36,21 +48,70 @@ const PropertyListing = () => {
       const data = await response.json();
       const propertiesData = data.data || data.properties || data || [];
       setProperties(propertiesData);
+      setFilteredProperties(propertiesData);
       setTotalResults(propertiesData.length);
     } catch (error) {
       console.error("Error fetching properties:", error);
-      // Set empty state on error
       setProperties([]);
+      setFilteredProperties([]);
       setTotalResults(0);
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle search functionality
+  const handleSearch = async (criteria) => {
+    setSearchCriteria(criteria);
+    setSearchPerformed(true);
+    setCurrentPage(1); // Reset to first page when searching
+    
+    try {
+      const response = await fetch(
+        'https://beta-house-airbnb-backend.onrender.com/api/v1/search',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(criteria)
+        }
+      );
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        const searchResults = data.properties || data || [];
+        setFilteredProperties(searchResults);
+        setTotalResults(searchResults.length);
+        console.log(searchResults)
+      } else {
+        console.error('Search failed:', data.message);
+        setFilteredProperties([]);
+        setTotalResults(0);
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      setFilteredProperties([]);
+      setTotalResults(0);
+    }
+  };
+
+  // Clear search and show all properties
+  const clearSearch = () => {
+    setSearchCriteria(null);
+    setSearchPerformed(false);
+    setFilteredProperties(properties);
+    setTotalResults(properties.length);
+    setCurrentPage(1);
+    // Clear browser history state
+    window.history.replaceState({}, document.title);
+  };
+
   // Get current properties for the page
   const getCurrentProperties = () => {
     const startIndex = (currentPage - 1) * propertiesPerPage;
-    return properties.slice(startIndex, startIndex + propertiesPerPage);
+    return filteredProperties.slice(startIndex, startIndex + propertiesPerPage);
   };
 
   const formatPrice = (price, type) => {
@@ -63,16 +124,6 @@ const PropertyListing = () => {
     }).format(price);
 
     return type === "rent" ? `${formattedPrice}/1 Year` : formattedPrice;
-  };
-
-  const toggleFavorite = (propertyId) => {
-    const newFavorites = new Set(favoriteProperties);
-    if (newFavorites.has(propertyId)) {
-      newFavorites.delete(propertyId);
-    } else {
-      newFavorites.add(propertyId);
-    }
-    setFavoriteProperties(newFavorites);
   };
 
   const handleImageError = (e) => {
@@ -153,12 +204,7 @@ const PropertyListing = () => {
             <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
               <img src={shareicon} alt="" />
             </button>
-            <button
-              className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${
-                favoriteProperties.has(property.id) ? "text-red-500" : ""
-              }`}
-              onClick={() => toggleFavorite(property.id)}
-            >
+            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
               <img src={loveicon} alt="" />
             </button>
           </div>
@@ -218,7 +264,7 @@ const PropertyListing = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto  px-4 py-8">
+      <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
           <div className="flex items-center gap-4 mb-4 md:mb-0">
@@ -262,18 +308,36 @@ const PropertyListing = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header*/}
+      {/* Header with search info */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
         <div className="flex items-center gap-4 mb-4 md:mb-0">
           <div className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-500 opacity-50">
             <Filter className="w-4 h-4" />
             More Filter
           </div>
-          <span className="text-gray-600">
-            Showing {(currentPage - 1) * propertiesPerPage + 1} -{" "}
-            {Math.min(currentPage * propertiesPerPage, totalResults)} of{" "}
-            {totalResults} results
-          </span>
+          
+          {searchPerformed && searchCriteria ? (
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600">
+                Showing {(currentPage - 1) * propertiesPerPage + 1} -{" "}
+                {Math.min(currentPage * propertiesPerPage, totalResults)} of{" "}
+                {totalResults} search results
+              </span>
+              <button 
+                onClick={clearSearch}
+                className="flex items-center gap-1 px-2 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
+              >
+                <X className="w-4 h-4" />
+                Clear search
+              </button>
+            </div>
+          ) : (
+            <span className="text-gray-600">
+              Showing {(currentPage - 1) * propertiesPerPage + 1} -{" "}
+              {Math.min(currentPage * propertiesPerPage, totalResults)} of{" "}
+              {totalResults} results
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2 opacity-50">
@@ -284,8 +348,32 @@ const PropertyListing = () => {
         </div>
       </div>
 
+      {/* Display search criteria if search was performed */}
+      {searchPerformed && searchCriteria && (
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <h3 className="font-semibold text-green-800 mb-2">Search Filters:</h3>
+          <div className="flex flex-wrap gap-4">
+            {searchCriteria.location && (
+              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                Location: {searchCriteria.location}
+              </span>
+            )}
+            {searchCriteria.propertyType && (
+              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                Type: {searchCriteria.propertyType}
+              </span>
+            )}
+            {searchCriteria.bedrooms && searchCriteria.bedrooms !== '0' && (
+              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                Bedrooms: {searchCriteria.bedrooms}+
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Property Grid */}
-      {properties.length > 0 ? (
+      {filteredProperties.length > 0 ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {getCurrentProperties().map((property) => (
@@ -299,7 +387,20 @@ const PropertyListing = () => {
         </>
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No properties found.</p>
+          <p className="text-gray-500 text-lg">
+            {searchPerformed 
+              ? "No properties found matching your search criteria." 
+              : "No properties available."
+            }
+          </p>
+          {searchPerformed && (
+            <button 
+              onClick={clearSearch}
+              className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+            >
+              View All Properties
+            </button>
+          )}
         </div>
       )}
     </div>

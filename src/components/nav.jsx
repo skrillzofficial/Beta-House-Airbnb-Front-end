@@ -20,19 +20,19 @@ const Nav = () => {
 
           {/* Navlinks */}
           <div className="hidden lg:flex space-x-8 absolute left-1/2 transform -translate-x-1/2">
-            <span className="text-white hover:underline pb-2 font-medium cursor-pointer transition-all underline-offset-4">
+            <span className="text-white disabled hover:underline pb-2 font-medium cursor-pointer transition-all underline-offset-4">
               Home
             </span>
-            <span className="text-white hover:underline font-medium cursor-pointer transition-all underline-offset-4">
+            <span className="text-white disabled hover:underline font-medium cursor-pointer transition-all underline-offset-4">
               Properties
             </span>
-            <span className="text-white hover:underline font-medium cursor-pointer transition-all underline-offset-4">
+            <span className="text-white disabled hover:underline font-medium cursor-pointer transition-all underline-offset-4">
               About Us
             </span>
-            <span className="text-white hover:underline font-medium cursor-pointer transition-all underline-offset-4">
+            <span className="text-white disabled hover:underline font-medium cursor-pointer transition-all underline-offset-4">
               Blog
             </span>
-            <span className="text-white hover:underline font-medium cursor-pointer transition-all underline-offset-4">
+            <span className="text-white disabled hover:underline font-medium cursor-pointer transition-all underline-offset-4">
               Contact Us
             </span>
           </div>
