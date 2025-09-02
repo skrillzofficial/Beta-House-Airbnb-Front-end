@@ -7,7 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
-  X
+  X,
 } from "lucide-react";
 import propeye from "../assets/Propeye.png";
 import propimage from "../assets/Propimage.png";
@@ -45,8 +45,29 @@ const PropertyListing = () => {
       const response = await fetch(
         `https://beta-house-airbnb-backend.onrender.com/api/v1/properties/`
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-      const propertiesData = data.data || data.properties || data || [];
+      console.log("API Response:", data); // Check this in browser console
+
+      // More robust data extraction
+      let propertiesData = [];
+
+      if (Array.isArray(data)) {
+        propertiesData = data;
+      } else if (data.data && Array.isArray(data.data)) {
+        propertiesData = data.data;
+      } else if (data.properties && Array.isArray(data.properties)) {
+        propertiesData = data.properties;
+      } else if (data.results && Array.isArray(data.results)) {
+        propertiesData = data.results;
+      }
+
+      console.log("Extracted properties:", propertiesData);
+
       setProperties(propertiesData);
       setFilteredProperties(propertiesData);
       setTotalResults(propertiesData.length);
@@ -64,38 +85,78 @@ const PropertyListing = () => {
   const handleSearch = async (criteria) => {
     setSearchCriteria(criteria);
     setSearchPerformed(true);
-    setCurrentPage(1); // Reset to first page when searching
-    
+    setCurrentPage(1);
+    setError(null);
+
     try {
       const response = await fetch(
-        'https://beta-house-airbnb-backend.onrender.com/api/v1/search',
+        "https://beta-house-airbnb-backend.onrender.com/api/v1/search",
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify(criteria)
+          body: JSON.stringify(criteria),
         }
       );
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        const searchResults = data.properties || data || [];
-        setFilteredProperties(searchResults);
-        setTotalResults(searchResults.length);
-        console.log(searchResults)
-      } else {
-        console.error('Search failed:', data.message);
-        setFilteredProperties([]);
-        setTotalResults(0);
+      if (!response.ok) {
+        throw new Error(`Search failed with status: ${response.status}`);
       }
+
+      const data = await response.json();
+      console.log("Search response:", data);
+
+      // Use the same extraction logic as fetchProperties
+      let searchResults = [];
+
+      if (Array.isArray(data)) {
+        searchResults = data;
+      } else if (data.data && Array.isArray(data.data)) {
+        searchResults = data.data;
+      } else if (data.properties && Array.isArray(data.properties)) {
+        searchResults = data.properties;
+      } else if (data.results && Array.isArray(data.results)) {
+        searchResults = data.results;
+      }
+
+      console.log("Extracted search results:", searchResults);
+
+      setFilteredProperties(searchResults);
+      setTotalResults(searchResults.length);
     } catch (error) {
-      console.error('Search error:', error);
+      console.error("Search error:", error);
+      setError("Search failed. Please try again.");
       setFilteredProperties([]);
       setTotalResults(0);
     }
   };
+
+  // Add this useEffect to detect network issues
+  useEffect(() => {
+    const checkNetwork = async () => {
+      try {
+        const testResponse = await fetch(
+          "https://beta-house-airbnb-backend.onrender.com/api/v1/health"
+        );
+        if (!testResponse.ok) {
+          setError("Backend server is not responding");
+        }
+      } catch (error) {
+        setError("Network error: Cannot connect to backend server");
+      }
+    };
+
+    if (properties.length === 0 && !loading) {
+      checkNetwork();
+    }
+  }, [properties, loading]);
+
+  useEffect(() => {
+    console.log("Properties:", properties);
+    console.log("Filtered Properties:", filteredProperties);
+    console.log("Total Results:", totalResults);
+  }, [properties, filteredProperties, totalResults]);
 
   // Clear search and show all properties
   const clearSearch = () => {
@@ -315,7 +376,7 @@ const PropertyListing = () => {
             <Filter className="w-4 h-4" />
             More Filter
           </div>
-          
+
           {searchPerformed && searchCriteria ? (
             <div className="flex items-center gap-2">
               <span className="text-gray-600">
@@ -323,7 +384,7 @@ const PropertyListing = () => {
                 {Math.min(currentPage * propertiesPerPage, totalResults)} of{" "}
                 {totalResults} search results
               </span>
-              <button 
+              <button
                 onClick={clearSearch}
                 className="flex items-center gap-1 px-2 py-1 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
               >
@@ -363,7 +424,7 @@ const PropertyListing = () => {
                 Type: {searchCriteria.propertyType}
               </span>
             )}
-            {searchCriteria.bedrooms && searchCriteria.bedrooms !== '0' && (
+            {searchCriteria.bedrooms && searchCriteria.bedrooms !== "0" && (
               <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
                 Bedrooms: {searchCriteria.bedrooms}+
               </span>
@@ -388,13 +449,12 @@ const PropertyListing = () => {
       ) : (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">
-            {searchPerformed 
-              ? "No properties found matching your search criteria." 
-              : "No properties available."
-            }
+            {searchPerformed
+              ? "No properties found matching your search criteria."
+              : "No properties available."}
           </p>
           {searchPerformed && (
-            <button 
+            <button
               onClick={clearSearch}
               className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
             >
