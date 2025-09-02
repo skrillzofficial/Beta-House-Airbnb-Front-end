@@ -24,6 +24,7 @@ const PropertyListing = () => {
   const [totalResults, setTotalResults] = useState(0);
   const [searchCriteria, setSearchCriteria] = useState(null);
   const [searchPerformed, setSearchPerformed] = useState(false);
+  const [error, setError] = useState(null);
   const propertiesPerPage = 9;
   const location = useLocation();
 
