@@ -43,8 +43,10 @@ const PropertyListing = () => {
   const fetchProperties = async () => {
     try {
       setLoading(true);
+      setError(null);
+
       const response = await fetch(
-        `https://beta-house-airbnb-backend.onrender.com/api/v1/properties/`
+        "https://beta-house-airbnb-backend.onrender.com/api/v1/properties/"
       );
 
       if (!response.ok) {
@@ -52,11 +54,12 @@ const PropertyListing = () => {
       }
 
       const data = await response.json();
-      console.log("API Response:", data); // Check this in browser console
+      console.log("API Response:", data);
 
       // More robust data extraction
       let propertiesData = [];
 
+      // Handle different possible response structures
       if (Array.isArray(data)) {
         propertiesData = data;
       } else if (data.data && Array.isArray(data.data)) {
@@ -65,6 +68,8 @@ const PropertyListing = () => {
         propertiesData = data.properties;
       } else if (data.results && Array.isArray(data.results)) {
         propertiesData = data.results;
+      } else if (data.items && Array.isArray(data.items)) {
+        propertiesData = data.items;
       }
 
       console.log("Extracted properties:", propertiesData);
@@ -74,6 +79,7 @@ const PropertyListing = () => {
       setTotalResults(propertiesData.length);
     } catch (error) {
       console.error("Error fetching properties:", error);
+      setError("Failed to load properties. Please try again later.");
       setProperties([]);
       setFilteredProperties([]);
       setTotalResults(0);
@@ -132,26 +138,6 @@ const PropertyListing = () => {
       setTotalResults(0);
     }
   };
-
-  // Add this useEffect to detect network issues
-  useEffect(() => {
-    const checkNetwork = async () => {
-      try {
-        const testResponse = await fetch(
-          "https://beta-house-airbnb-backend.onrender.com/api/v1/health"
-        );
-        if (!testResponse.ok) {
-          setError("Backend server is not responding");
-        }
-      } catch (error) {
-        setError("Network error: Cannot connect to backend server");
-      }
-    };
-
-    if (properties.length === 0 && !loading) {
-      checkNetwork();
-    }
-  }, [properties, loading]);
 
   useEffect(() => {
     console.log("Properties:", properties);
